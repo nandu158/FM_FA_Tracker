@@ -1,22 +1,22 @@
 
-from flask import Flask, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session
 
 app = Flask(__name__)
 app.secret_key = "secretkey123"
 
+# Dummy users (replace later)
 users = {
     "admin": "password123"
 }
 
+# Dashboard
 @app.route('/')
 def home():
     if "user" in session:
-        return f"""
-        <h2>Welcome {session['user']}</h2>
-        <a href="/logout">Logout</a>
-        """
+        return render_template("index.html", user=session["user"])
     return redirect(url_for("login"))
 
+# Login page
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -27,23 +27,15 @@ def login():
             session['user'] = username
             return redirect(url_for('home'))
         else:
-            return "<h3>Invalid credentials</h3>"
+            return render_template("login.html", error="Invalid credentials")
 
-    return '''
-        <h2>Login Page</h2>
-        <form method="post">
-            Username:<br>
-            <input type="text" name="username"><br>
-            Password:<br>
-            <input type="password" name="password"><br><br>
-            <input type="submit" value="Login">
-        </form>
-    '''
+    return render_template("login.html")
 
+# Logout
 @app.route('/logout')
 def logout():
     session.pop("user", None)
-    return redirect(url_for('login'))
+    return redirect(url_for("login"))
 
 if __name__ == "__main__":
     app.run()
